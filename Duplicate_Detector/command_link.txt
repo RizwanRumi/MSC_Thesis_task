@@ -1,0 +1,7 @@
+1. open folder in cmd: (E:\Thesis_Task\Duplicate_Detector)
+2. Run: 
+	python detect_and_remove.py --dataset Healthy_folder 
+3. Remove duplicate image:
+	python detect_and_remove.py --dataset Healthy_folder --remove 1
+
+
