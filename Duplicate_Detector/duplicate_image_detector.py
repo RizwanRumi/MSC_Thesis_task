@@ -126,7 +126,7 @@ def search_one_dir(img_matrices_A, folderfiles_A, similarity, show_output=False)
             img_id = str(int(img_id) + 1)
         show_progress(count_A, img_matrices_A, task='comparing images')
         for count_B, imageMatrix_B in enumerate(img_matrices_A):
-            if count_B > count_A and count_A != len(img_matrices_A):
+            if count_B > count_A != len(img_matrices_A):
                 rotations = 0
                 while rotations <= 3:
                     if rotations != 0:
@@ -165,16 +165,31 @@ def search_one_dir(img_matrices_A, folderfiles_A, similarity, show_output=False)
     return result, lower_quality
 
 
+ # Function for deleting the lower quality images that were found after the search
+def delete_images(image_list):
+    deleted = 0
+    # delete lower quality images
+    for file in image_list:
+        print("\nDeletion in progress...", end="\r")
+        try:
+            os.remove(file)
+            print("Deleted file:", file, end="\r")
+            deleted += 1
+        except:
+            print("Could not delete file:", file, end="\r")
+    print("\n***\nDeleted", deleted, "images.")
+
+
 if __name__ == "__main__":
 
     start_time = time.time()
-    folder_path = "E:/Thesis_Task/Duplicate_Detector/dataset/"
+    folder_path = "E:/Thesis_Task/Duplicate_Detector/Datasets/Healthy_grey/"
     directory = check_directory(folder_path)
-    img_matrices, files = create_imgs_matrix(directory, px_size=50)
+    img_matrices, files = create_imgs_matrix(directory, px_size=200)
     ref = map_similarity(similarity="low")
-    result, lower_quality = search_one_dir(img_matrices, files, ref, show_output=False)
+    duplicate_result, lower_quality = search_one_dir(img_matrices, files, ref, show_output=False)
 
-    if len(result) == 1:
+    if len(duplicate_result) == 1:
         images = "image"
     else:
         images = "images"
@@ -183,9 +198,19 @@ if __name__ == "__main__":
     time_elapsed = np.round(end_time - start_time, 4)
     print("\n")
 
-    for id in enumerate(result):
-        for y in result[id[1]]:
-            print(y, ':', result[id[1]][y])
+    for id in enumerate(duplicate_result):
+        for y in duplicate_result[id[1]]:
+            print(y, ':', duplicate_result[id[1]][y])
 
-    print("\nFound", len(result), images, "with one or more duplicate/similar images in", time_elapsed, "seconds.")
+    print("\nFound", len(duplicate_result), images, "with one or more duplicate/similar images in", time_elapsed, "seconds.")
+    print("\nFound", len(lower_quality), images, "with one or more lower quality images in", time_elapsed, "seconds.")
 
+    if len(duplicate_result) != 0 or len(lower_quality) != 0:
+        # optional delete images
+        usr = input("Are you sure you want to delete all lower resolution and duplicate images?"
+                    "\nThis cannot be undone. (y/n)")
+        if str(usr) == "y":
+            delete_images(set(duplicate_result))
+            delete_images(set(lower_quality))
+        else:
+            print("Image deletion canceled.")
