@@ -11,7 +11,6 @@ from datetime import datetime
 # Function that processes the directories that were input as parameters
 def check_directory(directory):
     directory = Path(directory)
-    # check if directories are valid
     if not os.path.isdir(directory):
         raise FileNotFoundError(f"Directory " + str(directory) + " does not exist")
     return directory
@@ -24,7 +23,7 @@ def show_progress(count, list, task='processing images'):
     else:
         print(f"..... {task}: [{count}/{len(list)}] [{count / len(list):.0%}]", end="\r")
 
-# Function that maps the similarity grade to the respective MSE value
+# Function that check the respective MSE value
 def map_similarity(similarity):
     try:
         similarity = float(similarity)
@@ -32,7 +31,7 @@ def map_similarity(similarity):
     except:
         if similarity == "low":
             ref = 466
-        # search for exact duplicate images, extremly sensitive, MSE < 0.1
+        # search for exact duplicate images, extremely sensitive, MSE < 0.1
         elif similarity == "high":
             ref = 0.1
         # normal, search for duplicates, recommended, MSE < 200
@@ -44,7 +43,7 @@ def map_similarity(similarity):
 def create_imgs_matrix(directory, px_size):
     # create list of files found in directory
     folder_files = [(directory, filename) for filename in os.listdir(directory)]
-    #file_list = [filename for filename in os.listdir(directory)]
+    # file_list = [file for filename in os.listdir(directory)]
 
     # create images matrix
     imgs_matrix, delete_index = [], []
@@ -64,7 +63,6 @@ def create_imgs_matrix(directory, px_size):
         else:
             delete_index.append(count)
 
-
     for index in reversed(delete_index):
         del folder_files[index]
 
@@ -75,7 +73,7 @@ def rotate_img(image):
     image = np.rot90(image, k=1, axes=(0, 1))
     return image
 
-# Function that calulates the mean squared error (mse) between two image matrices
+# Function that calculates the mean squared error (mse) between two image matrices
 def mse(imageA, imageB):
     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
     err /= float(imageA.shape[0] * imageA.shape[1])
@@ -102,15 +100,6 @@ def show_file_info(imageA, imageB):
     imageA = "..." + str(imageA)[-45:]
     imageB = "..." + str(imageB)[-45:]
     print(f"""Duplicate files:\n{imageA} and \n{imageB}\n""")
-
-# Function for checking the quality of compared images, appends the lower quality image to the list
-def check_img_quality(imageA, imageB):
-    size_imgA = os.stat(imageA).st_size
-    size_imgB = os.stat(imageB).st_size
-    if size_imgA >= size_imgB:
-        return imageA, imageB
-    else:
-        return imageB, imageA
 
 # Function that searches one directory for duplicate/similar images
 def search_one_dir(img_matrices_A, folderfiles_A, similarity, show_output=False):
@@ -148,24 +137,15 @@ def search_one_dir(img_matrices_A, folderfiles_A, similarity, show_output=False)
                                                   Path(folderfiles_A[count_A][0]) / folderfiles_A[count_A][1]),
                                               'duplicates': [
                                                   str(Path(folderfiles_A[count_B][0]) / folderfiles_A[count_B][1])]}
-                        try:
-                            high, low = check_img_quality(
-                                Path(folderfiles_A[count_A][0]) / folderfiles_A[count_A][1],
-                                Path(folderfiles_A[count_B][0]) / folderfiles_A[count_B][1])
-                            lower_quality.append(str(low))
-                        except:
-                            pass
                         break
                     else:
                         rotations += 1
 
     result = collections.OrderedDict(sorted(result.items()))
-    lower_quality = list(set(lower_quality))
-
-    return result, lower_quality
+    return result
 
 
- # Function for deleting the lower quality images that were found after the search
+# Function for deleting the lower quality images that were found after the search
 def delete_images(image_list):
     deleted = 0
     # delete lower quality images
@@ -183,34 +163,35 @@ def delete_images(image_list):
 if __name__ == "__main__":
 
     start_time = time.time()
-    folder_path = "E:/Thesis_Task/Duplicate_Detector/Datasets/Healthy_grey/"
+    folder_path = "E:/Thesis_Task/Duplicate_Detector/Datasets/Broken_grey_test/"
     directory = check_directory(folder_path)
-    img_matrices, files = create_imgs_matrix(directory, px_size=200)
+    img_matrices, files = create_imgs_matrix(directory, px_size=100)
     ref = map_similarity(similarity="low")
-    duplicate_result, lower_quality = search_one_dir(img_matrices, files, ref, show_output=False)
-
-    if len(duplicate_result) == 1:
-        images = "image"
-    else:
-        images = "images"
-
+    duplicate_result = search_one_dir(img_matrices, files, ref, show_output=False)
     end_time = time.time()
     time_elapsed = np.round(end_time - start_time, 4)
-    print("\n")
 
-    for id in enumerate(duplicate_result):
-        for y in duplicate_result[id[1]]:
-            print(y, ':', duplicate_result[id[1]][y])
+    duplicate_images_list = set()
+    #x = duplicate_result.keys()
+    #print(x)
+    for res in duplicate_result.values():
+        #print("res: ", res)
+        for x,y in res.items():
+            print(x, ':', y)
+        for lst in res.get("duplicates"):
+            duplicate_images_list.add(lst)
 
-    print("\nFound", len(duplicate_result), images, "with one or more duplicate/similar images in", time_elapsed, "seconds.")
-    print("\nFound", len(lower_quality), images, "with one or more lower quality images in", time_elapsed, "seconds.")
+    total_duplicate = len(duplicate_images_list)
 
-    if len(duplicate_result) != 0 or len(lower_quality) != 0:
+    images = 'image' if total_duplicate == 1 else 'images'
+
+    print("\nFound", total_duplicate, images, "with one or more duplicate/similar images in", time_elapsed, "seconds.\n")
+
+    if total_duplicate != 0:
         # optional delete images
         usr = input("Are you sure you want to delete all lower resolution and duplicate images?"
-                    "\nThis cannot be undone. (y/n)")
+                    "\nThis cannot be undone. (y/n) ")
         if str(usr) == "y":
-            delete_images(set(duplicate_result))
-            delete_images(set(lower_quality))
+            delete_images(list(duplicate_images_list))
         else:
             print("Image deletion canceled.")
