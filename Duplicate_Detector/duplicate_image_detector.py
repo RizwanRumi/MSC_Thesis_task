@@ -143,21 +143,22 @@ def search_one_dir(img_matrices_A, folderfiles_A, similarity, show_output=False)
     result = collections.OrderedDict(result.items())
     return result
 
-"""
+
 # Function for deleting the lower quality images that were found after the search
-def delete_images(image_list):
+def delete_images(image_directory, image_list):
     deleted = 0
     # delete lower quality images
     for file in image_list:
         print("\nDeletion in progress...", end="\r")
         try:
-            os.remove(file)
+            image_path = Path(image_directory / file)
+            os.remove(image_path)
             print("Deleted file:", file, end="\r")
             deleted += 1
         except:
             print("Could not delete file:", file, end="\r")
     print("\n***\nDeleted", deleted, "images.")
-"""
+
 
 # Function for deleting the lower quality images with labels that were found after the search
 def delete_images_with_lables(image_directory, label_directory, image_list):
@@ -183,8 +184,14 @@ def delete_images_with_lables(image_directory, label_directory, image_list):
 if __name__ == "__main__":
 
     start_time = time.time()
-    folder_path = "E:/Thesis_Task/Duplicate_Detector/Datasets/augmented/raw_flip_rotation_2x/train/"
+    folder_path = "./Datasets/augmented/raw_flip_rotation_2x/train/"
+    #folder_path = "./Datasets/Broken/"
     directory = check_directory(folder_path)
+
+    # For only images without labels
+    #images_directory = folder_path
+
+    # for images and labels folder
     folders = os.listdir(directory)
     images_directory = Path(directory / folders[0])
     labels_directory = Path(directory / folders[1])
@@ -217,6 +224,7 @@ if __name__ == "__main__":
         usr = input("Are you sure you want to delete all duplicate images with their labels?"
                     "\nThis cannot be undone. (y/n) ")
         if str(usr) == "y":
+            # delete_images(images_directory, list(duplicate_images_list))
             delete_images_with_lables(images_directory, labels_directory, list(duplicate_images_list))
         else:
             print("Image deletion canceled.")
