@@ -147,3 +147,9 @@ dmypy.json
 
 # Ignore all image files
 *.jpeg
+
+# Ignore all zip files
+*.zip
+
+# Ignore all pbtxt files
+*.pbtxt
