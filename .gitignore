@@ -127,3 +127,20 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore datasets folder
+/augmented_images
+/images
+/Datasets
+/Final_datasets
+/Dataset
+/Results
+
+# Ignore all text files
+*.txt
+
+# Ignore all image files
+*.jpg
+
+# Ignore all image files
+*.jpeg
