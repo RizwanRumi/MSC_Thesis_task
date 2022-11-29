@@ -151,12 +151,14 @@ def delete_images(image_directory, image_list):
     for file in image_list:
         print("\nDeletion in progress...", end="\r")
         try:
-            image_path = Path(image_directory / file)
+            #image_path = str(Path(image_directory) / file)
+            image_path = Path(image_directory) / file
             os.remove(image_path)
             print("Deleted file:", file, end="\r")
             deleted += 1
-        except:
+        except Exception as e:
             print("Could not delete file:", file, end="\r")
+            print(e)
     print("\n***\nDeleted", deleted, "images.")
 
 
@@ -169,23 +171,24 @@ def delete_images_with_lables(image_directory, label_directory, image_list):
         # get filename
         name, ext = os.path.splitext(file)
         label = str(name + '.txt')
-        image_path = Path(image_directory / file)
-        label_path = Path(label_directory / label)
+        image_path = Path(image_directory) / file
+        label_path = Path(label_directory) / label
         try:
             os.remove(image_path)
             os.remove(label_path)
             print("Deleted file: {0}, {1}".format(file, label), end="\r")
             deleted += 1
-        except:
+        except Exception as e:
             print("Can not Delete : {0}, {1}".format(file, label), end="\r")
+            print(e)
     print("\n***\nDeleted", deleted, "images.")
 
 
 if __name__ == "__main__":
 
     start_time = time.time()
-    folder_path = "./Datasets/augmented/raw_flip_rotation_2x/train/"
-    #folder_path = "./Datasets/Broken/"
+    folder_path = "./Datasets/YOLOV5_Dataset_4/train/"
+    #folder_path = "./Datasets/augmented/Broken_GrayNegative/"
     directory = check_directory(folder_path)
 
     # For only images without labels
@@ -224,7 +227,7 @@ if __name__ == "__main__":
         usr = input("Are you sure you want to delete all duplicate images with their labels?"
                     "\nThis cannot be undone. (y/n) ")
         if str(usr) == "y":
-            # delete_images(images_directory, list(duplicate_images_list))
+            #delete_images(images_directory, list(duplicate_images_list))
             delete_images_with_lables(images_directory, labels_directory, list(duplicate_images_list))
         else:
             print("Image deletion canceled.")
