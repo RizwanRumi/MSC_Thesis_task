@@ -1,3 +1,12 @@
+"""
+Use:
+python active_learning.py -dir ./dataset_1 -I 1
+python active_learning.py -dir ./dataset_1 -I 2
+    or
+python active_learning.py --inputDir ./dataset_1 --iteration 1
+python active_learning.py --inputDir ./dataset_1 --iteration 2
+"""
+
 import argparse
 import fnmatch
 import os
@@ -7,12 +16,10 @@ from pathlib import Path
 
 import numpy as np
 
-INITIAL_SPLIT = True
 ROOT_DIR = "./new_dataset/"
 temp_img_directory = ROOT_DIR + "temp_images/"
 temp_text_directory = ROOT_DIR + "temp_labels/"
 
-ITERATION = 1
 
 def get_images_and_labels(img_path, label_path):
     img_count = 0
@@ -78,8 +85,9 @@ def split_ratio(selected_for_training: object, img_dir, label_dir):
         print("text file moved: ", len(labels))
     else:
         raise Exception("Text files are missing..")
-    #return images, labels
+    # return images, labels
     return names
+
 
 def train_test_split(selected_files):
     os.makedirs(ROOT_DIR + "train/images/", exist_ok=True)
@@ -106,8 +114,8 @@ def train_test_split(selected_files):
     label_dir = temp_text_directory
 
     for item in train_files:
-        image =  item + '.jpg'
-        label =  item + '.txt'
+        image = item + '.jpg'
+        label = item + '.txt'
         imgpath = os.path.join(img_dir, image)
         shutil.move(imgpath, ROOT_DIR + "train/images/")
         txtpath = os.path.join(label_dir, label)
@@ -128,7 +136,6 @@ def train_test_split(selected_files):
         shutil.move(imgpath, ROOT_DIR + "test/images/")
         txtpath = os.path.join(label_dir, label)
         shutil.move(txtpath, ROOT_DIR + "test/labels/")
-
 
 
 def main():
@@ -172,10 +179,8 @@ def main():
         print("Images and Labels (both) are : ", total_images)
 
         if ITERATION == 1:
-            INITIAL_SPLIT = True
             selected_ratio = 0.15
         else:
-            INITIAL_SPLIT = False
             selected_ratio = 0.05
 
         # Create new dataset directory
