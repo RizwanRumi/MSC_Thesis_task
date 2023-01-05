@@ -25,7 +25,7 @@ while True:
 
     if (ret1):
         # Display the resulting frame
-        cv2.imwrite("test.jpg", frame1)
+        #cv2.imwrite("test.jpg", frame1)
         #img = cv2.imread("test.jpg")
         width = 640
         height = 640
@@ -33,7 +33,7 @@ while True:
 
         # resize image
         resized = cv2.resize(frame1, dim, interpolation=cv2.INTER_AREA)
-        cv2.imwrite("Edited.jpg", resized)
+        cv2.imwrite("./images/Edited.jpg", resized)
         print('Resized Dimensions : ', resized.shape)
 
         cv2.imshow('Cam 1', frame1)
