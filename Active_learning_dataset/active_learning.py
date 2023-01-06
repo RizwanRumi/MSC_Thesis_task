@@ -37,25 +37,32 @@ def get_images_and_labels(img_path, label_path):
         return img_count
 
 
-def split_ratio(selected_for_training: object, img_dir, label_dir):
+def get_pooling_data(number_of_pooling_data, img_dir, label_dir):
+    # Pool data by selecting the equal number of healthy and broken images with their labels in temporary folders
     os.makedirs(temp_img_directory, exist_ok=True)
     os.makedirs(temp_text_directory, exist_ok=True)
     images = []
     labels = []
 
-    if selected_for_training % 2 != 0:
-        selected_for_training = selected_for_training + 1
+    # check the even percentage to pool balanced data
+    if number_of_pooling_data % 2 != 0:
+        number_of_pooling_data = number_of_pooling_data - 1
 
-    select_healthy = int(selected_for_training / 2)
-    select_broken = int(selected_for_training - select_healthy)
+    # divide the percentage of an equal number for healthy and broken images
+    select_healthy = int(number_of_pooling_data / 2)
+    select_broken = int(number_of_pooling_data - select_healthy)
 
+    # get equal number of random healthy and broken data
     healthy_images = random.sample([f for f in os.listdir(img_dir) if 'healthy' in f], select_healthy)
     images.extend(healthy_images)
 
     broken_images = random.sample([f for f in os.listdir(img_dir) if 'broken' in f], select_broken)
     images.extend(broken_images)
 
+    # get name list from images to check the labels file
     names = [os.path.splitext(filename)[0] for filename in images]
+
+    # get labels
     text_files = [f for f in os.listdir(label_dir)]
 
     # Check missing labelled text file from labels folder.
@@ -70,15 +77,15 @@ def split_ratio(selected_for_training: object, img_dir, label_dir):
             missing_file.append(filename)
 
     if len(missing_file) == 0:
-        for fname in images:
-            srcpath = os.path.join(img_dir, fname)
-            shutil.move(srcpath, temp_img_directory)
+        for name in images:
+            img_source_path = os.path.join(img_dir, name)
+            shutil.move(img_source_path, temp_img_directory)
 
         for file in names:
             txt = file + '.txt'
             labels.append(txt)
-            srcpath = os.path.join(label_dir, txt)
-            shutil.move(srcpath, temp_text_directory)
+            txt_source_path = os.path.join(label_dir, txt)
+            shutil.move(txt_source_path, temp_text_directory)
 
         print("-------------------------")
         print("image file moved: ", len(images))
@@ -89,7 +96,8 @@ def split_ratio(selected_for_training: object, img_dir, label_dir):
     return names
 
 
-def train_test_split(selected_files):
+def split_data(selected_files):
+    # data split between train, validation and test
     os.makedirs(ROOT_DIR + "train/images/", exist_ok=True)
     os.makedirs(ROOT_DIR + "train/labels/", exist_ok=True)
     os.makedirs(ROOT_DIR + "valid/images/", exist_ok=True)
@@ -116,31 +124,29 @@ def train_test_split(selected_files):
     for item in train_files:
         image = item + '.jpg'
         label = item + '.txt'
-        imgpath = os.path.join(img_dir, image)
-        shutil.move(imgpath, ROOT_DIR + "train/images/")
-        txtpath = os.path.join(label_dir, label)
-        shutil.move(txtpath, ROOT_DIR + "train/labels/")
+        train_img_path = os.path.join(img_dir, image)
+        shutil.move(train_img_path, ROOT_DIR + "train/images/")
+        train_txt_path = os.path.join(label_dir, label)
+        shutil.move(train_txt_path, ROOT_DIR + "train/labels/")
 
     for item in val_files:
         image = item + '.jpg'
         label = item + '.txt'
-        imgpath = os.path.join(img_dir, image)
-        shutil.move(imgpath, ROOT_DIR + "valid/images/")
-        txtpath = os.path.join(label_dir, label)
-        shutil.move(txtpath, ROOT_DIR + "valid/labels/")
+        val_img_path = os.path.join(img_dir, image)
+        shutil.move(val_img_path, ROOT_DIR + "valid/images/")
+        val_txt_path = os.path.join(label_dir, label)
+        shutil.move(val_txt_path, ROOT_DIR + "valid/labels/")
 
     for item in test_files:
         image = item + '.jpg'
         label = item + '.txt'
-        imgpath = os.path.join(img_dir, image)
-        shutil.move(imgpath, ROOT_DIR + "test/images/")
-        txtpath = os.path.join(label_dir, label)
-        shutil.move(txtpath, ROOT_DIR + "test/labels/")
+        test_img_path = os.path.join(img_dir, image)
+        shutil.move(test_img_path, ROOT_DIR + "test/images/")
+        test_txt_path = os.path.join(label_dir, label)
+        shutil.move(test_txt_path, ROOT_DIR + "test/labels/")
 
 
 def main():
-    global INITIAL_SPLIT
-
     # Initiate argument parser
     parser = argparse.ArgumentParser(
         description="Apply active learning and split the dataset"
@@ -185,11 +191,11 @@ def main():
 
         # Create new dataset directory
         os.makedirs(ROOT_DIR, exist_ok=True)
-        selected_for_training = int(total_images * selected_ratio)
-        print("Selected for Training: ", selected_for_training)
+        number_of_pooling_data = int(total_images * selected_ratio)
+        print("Data Select for Pooling: ", number_of_pooling_data)
 
-        selected_files = split_ratio(selected_for_training, images_directory, labels_directory)
-        train_test_split(selected_files)
+        selected_files = get_pooling_data(number_of_pooling_data, images_directory, labels_directory)
+        split_data(selected_files)
 
         print("-------------------------")
         print("Split Successful. Current details:: ")
