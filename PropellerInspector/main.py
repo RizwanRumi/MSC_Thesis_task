@@ -119,7 +119,7 @@ if __name__ == '__main__':
         classes = f.read().rstrip('\n').split('\n')
 
     # Load image.
-    frame = cv2.imread('./images/Edited.jpg')
+    frame = cv2.imread('./images/Camera_1.jpg')
 
     # Give the weight files to the model and load the network using them.
     modelWeights = "best.onnx"
