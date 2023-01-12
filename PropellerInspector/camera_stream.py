@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 #video_capture_0 = cv2.VideoCapture(0)
-video_capture_1 = cv2.VideoCapture(1)
+video_capture_1 = cv2.VideoCapture(0)
 #video_capture_2 = cv2.VideoCapture(2)
 
 video_capture_1.set(cv2.CAP_PROP_FRAME_WIDTH, 700)

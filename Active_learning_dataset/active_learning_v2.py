@@ -385,8 +385,8 @@ def main():
                 total_test_broken_images = get_images_and_labels(ROOT_DIR + 'test/Broken/images/',
                                                                  ROOT_DIR + 'test/Broken/labels')
                 total_test_healthy_images = get_images_and_labels(ROOT_DIR + 'test/Healthy/images/',
-                                                                 ROOT_DIR + 'test/Healthy/labels/')
-                print('Testing: ',total_test_broken_images + total_test_healthy_images)
+                                                                  ROOT_DIR + 'test/Healthy/labels/')
+                print('Testing: ', total_test_broken_images + total_test_healthy_images)
                 print("-------------------------")
                 
                 print("File Transferring:....")
