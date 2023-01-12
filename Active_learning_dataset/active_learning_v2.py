@@ -290,12 +290,13 @@ def main():
         "--iteration",
         help="Number of iteration to pick selected number of random data from main dataset",
         type=int,
-        default=0
+        default=7
     )
 
     try:
         args = parser.parse_args()
-        assert os.path.isdir(args.inputDir), "The directory is not found. Please check the directory."
+        assert os.path.isdir(args.inputDir), "The directory is not found. Please check the directory. " \
+                                             "Hints: run at first -dir ./test_dataset -I 0"
 
         iteration = args.iteration
         directory = args.inputDir
@@ -310,88 +311,97 @@ def main():
 
             create_pool_based_data(iteration, total_broken_images, total_healthy_images, sub_dir_list)
         else:
-            file = ROOT_DIR + "check_iteration.txt"
-            if not os.path.isfile(file):
-                f = open(file, "x")
-                f.close()
-
-            if iteration == 1:
-                selected_ratio = 0.15
-            else:
-                selected_ratio = 0.05
-
-            # check iteration
-            numbers = []
-            with open(file) as f:
-                for line in f.readlines():
-                    if line != '\n':
-                        val = line.split()
-                        numbers.append(int(val[0]))
-                    else:
-                        f.close()
-
-            length = len(numbers)
-            if iteration in numbers:
-                msg = 'Iteration {} has run before. Please select iteration {}.'.format(iteration,
-                                                                                        numbers[length - 1] + 1)
+            if directory == "./test_dataset" and "./test_dataset/":
+                msg = "Please change the input directory and replace by ./Training_pool_dataset"
                 raise Exception(msg)
             else:
-                f = open(file, "a+")
-                f.write('%d\n' % iteration)
-                f.close()
 
-                print("********** Iteration: {} **********".format(iteration))
-                print("-------------------------")
+                file = ROOT_DIR + "check_iteration.txt"
+                if not os.path.isfile(file):
+                    f = open(file, "x")
+                    f.close()
 
-                pool_dir_list = get_sub_directories(pool_train_directory)
-                total_broken_images = get_images_and_labels(pool_dir_list[0][0], pool_dir_list[0][1])
-                print("Training pool broken images and labels (both) are : ", total_broken_images)
+                if iteration == 1:
+                    selected_ratio = 0.15
+                else:
+                    selected_ratio = 0.05
 
-                total_healthy_images = get_images_and_labels(pool_dir_list[1][0], pool_dir_list[1][1])
-                print("training pool healthy images and labels (both) are : ", total_healthy_images)
+                # check iteration
+                numbers = []
+                with open(file) as f:
+                    for line in f.readlines():
+                        if line != '\n':
+                            val = line.split()
+                            numbers.append(int(val[0]))
+                        else:
+                            f.close()
 
-                num_of_pool_based_broken_images = int(total_broken_images * selected_ratio)
-                num_of_pool_based_healthy_images = int(total_healthy_images * selected_ratio)
+                length = len(numbers)
+                if iteration in numbers:
+                    msg = 'Iteration {} has run before. Please select iteration {}.'.format(iteration,
+                                                                                            numbers[length - 1] + 1)
+                    raise Exception(msg)
+                else:
+                    f = open(file, "a+")
+                    f.write('%d\n' % iteration)
+                    f.close()
 
-                # Create random query selective dataset
-                query_based_selection(num_of_pool_based_broken_images, num_of_pool_based_healthy_images, pool_dir_list)
+                    print("********** Iteration: {} **********".format(iteration))
+                    print("-------------------------")
+                    pool_dir_list = get_sub_directories(pool_train_directory)
+                    total_broken_images = get_images_and_labels(pool_dir_list[0][0], pool_dir_list[0][1])
+                    print("Training pool broken images and labels (both) are : ", total_broken_images)
 
-                query_based_dir = get_sub_directories(QUERY_SELECT_DIR)
-                # fetch data from query selected folder to iteration dataset folder
-                total_query_broken_images = get_images_and_labels(query_based_dir[0][0], query_based_dir[0][1])
-                print("Query base selected broken images and labels (both) are : ", total_query_broken_images)
+                    total_healthy_images = get_images_and_labels(pool_dir_list[1][0], pool_dir_list[1][1])
+                    print("training pool healthy images and labels (both) are : ", total_healthy_images)
 
-                total_query_healthy_images = get_images_and_labels(query_based_dir[1][0], query_based_dir[1][1])
-                print("Query base selected healthy images and labels (both) are : ", total_query_healthy_images)
+                    num_of_pool_based_broken_images = int(total_broken_images * selected_ratio)
+                    num_of_pool_based_healthy_images = int(total_healthy_images * selected_ratio)
 
-                create_pool_based_data(iteration, total_query_broken_images, total_query_healthy_images,
-                                       query_based_dir)
+                    if num_of_pool_based_broken_images > 4 and num_of_pool_based_healthy_images > 4:
+                        print(str(selected_ratio * 100) + "% random data is taken and "
+                                                          "split between train(80%) and val(20%)")
+                        # Create random query selective dataset
+                        query_based_selection(num_of_pool_based_broken_images, num_of_pool_based_healthy_images, pool_dir_list)
 
-                print("-------------------------")
-                print("Split Successful. Current details:: ")
-                # 2 is multiplied for counting the healthy data
-                total_train_broken_images = get_images_and_labels(iterative_train_dir + 'Broken/images/',
-                                                                  iterative_train_dir + 'Broken/labels/')
-                total_train_healthy_images = get_images_and_labels(iterative_train_dir + 'Healthy/images/',
-                                                                   iterative_train_dir + 'Healthy/labels/')
-                print('Training: ', total_train_broken_images + total_train_healthy_images)
+                        query_based_dir = get_sub_directories(QUERY_SELECT_DIR)
+                        print("-------Query selection data----------------")
+                        # fetch data from query selected folder to iteration dataset folder
+                        total_query_broken_images = get_images_and_labels(query_based_dir[0][0], query_based_dir[0][1])
+                        print("Query base selected broken images and labels (both) are : ", total_query_broken_images)
 
-                total_val_broken_images = get_images_and_labels(iterative_val_dir + 'Broken/images/',
-                                                                iterative_val_dir + 'Broken/labels/')
-                total_val_healthy_images = get_images_and_labels(iterative_val_dir + 'Healthy/images/',
-                                                                 iterative_val_dir + 'Healthy/labels/')
-                print('Validation: ', total_val_broken_images + total_val_healthy_images)
+                        total_query_healthy_images = get_images_and_labels(query_based_dir[1][0], query_based_dir[1][1])
+                        print("Query base selected healthy images and labels (both) are : ", total_query_healthy_images)
 
-                total_test_broken_images = get_images_and_labels(ROOT_DIR + 'test/Broken/images/',
-                                                                 ROOT_DIR + 'test/Broken/labels')
-                total_test_healthy_images = get_images_and_labels(ROOT_DIR + 'test/Healthy/images/',
-                                                                  ROOT_DIR + 'test/Healthy/labels/')
-                print('Testing: ', total_test_broken_images + total_test_healthy_images)
-                print("-------------------------")
-                
-                print("File Transferring:....")
-                file_transfer(iteration)
+                        create_pool_based_data(iteration, total_query_broken_images, total_query_healthy_images,
+                                               query_based_dir)
 
+                        print("-------------------------")
+                        print("Split Successful. Current details:: ")
+                        # calculate total split data
+                        total_train_broken_images = get_images_and_labels(iterative_train_dir + 'Broken/images/',
+                                                                          iterative_train_dir + 'Broken/labels/')
+                        total_train_healthy_images = get_images_and_labels(iterative_train_dir + 'Healthy/images/',
+                                                                           iterative_train_dir + 'Healthy/labels/')
+                        print('Training: ', total_train_broken_images + total_train_healthy_images)
+
+                        total_val_broken_images = get_images_and_labels(iterative_val_dir + 'Broken/images/',
+                                                                        iterative_val_dir + 'Broken/labels/')
+                        total_val_healthy_images = get_images_and_labels(iterative_val_dir + 'Healthy/images/',
+                                                                         iterative_val_dir + 'Healthy/labels/')
+                        print('Validation: ', total_val_broken_images + total_val_healthy_images)
+
+                        total_test_broken_images = get_images_and_labels(ROOT_DIR + 'test/Broken/images/',
+                                                                         ROOT_DIR + 'test/Broken/labels')
+                        total_test_healthy_images = get_images_and_labels(ROOT_DIR + 'test/Healthy/images/',
+                                                                          ROOT_DIR + 'test/Healthy/labels/')
+                        print('Testing: ', total_test_broken_images + total_test_healthy_images)
+                        print("-------------------------")
+
+                        print("File Transferring:....")
+                        file_transfer(iteration)
+                    else:
+                        print("There have no sufficient data. Stop iteration and please add new data.")
     except AssertionError as msg:
         print(msg)
 
