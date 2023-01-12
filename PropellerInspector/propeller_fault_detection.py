@@ -9,7 +9,7 @@ INPUT_WIDTH = 640
 INPUT_HEIGHT = 640
 SCORE_THRESHOLD = 0.5
 NMS_THRESHOLD = 0.45
-CONFIDENCE_THRESHOLD = 0.45
+CONFIDENCE_THRESHOLD = 0.25
 
 # Text parameters.
 FONT_FACE = cv.FONT_HERSHEY_SIMPLEX
@@ -129,13 +129,13 @@ if __name__ == "__main__":
 
     if net is not None:
         Inspection = Detection(net, label_file)
-        #capture = cv.VideoCapture(0)
-        #capture.set(cv.CAP_PROP_FRAME_WIDTH, 700)
-        #capture.set(cv.CAP_PROP_FRAME_HEIGHT, 700)
+        capture = cv.VideoCapture(1)
+        capture.set(cv.CAP_PROP_FRAME_WIDTH, 700)
+        capture.set(cv.CAP_PROP_FRAME_HEIGHT, 700)
 
-        capture = cv.VideoCapture("propeller.mp4")
+        # capture = cv.VideoCapture("propeller.mp4")
 
-        start = time.time()
+        start = time.time_ns()
         frame_count = 0
         total_frames = 0
         fps = -1
@@ -155,8 +155,8 @@ if __name__ == "__main__":
                     frame_count += 1
                     total_frames += 1
                     if frame_count >= 30:
-                        end = time.time()
-                        fps = 1 * frame_count / (end - start)
+                        end = time.time_ns()
+                        fps = 1000000000 * frame_count / (end - start)
                         frame_count = 0
                         start = time.time_ns()
 
@@ -164,7 +164,7 @@ if __name__ == "__main__":
                         fps_label = "FPS: %.2f" % fps
                         cv.putText(img, fps_label, (10, 25), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-                    cv.imshow('object detection', img)
+                    cv.imshow('Propeller fault detection', img)
                     # key: 'ESC'
                     key = cv.waitKey(20)
                     if key == 27:
