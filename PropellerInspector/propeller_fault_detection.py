@@ -7,9 +7,9 @@ import numpy as np
 # Constants.
 INPUT_WIDTH = 640
 INPUT_HEIGHT = 640
-SCORE_THRESHOLD = 0.5
-NMS_THRESHOLD = 0.45
-CONFIDENCE_THRESHOLD = 0.25
+SCORE_THRESHOLD = 0.2
+NMS_THRESHOLD = 0.4
+CONFIDENCE_THRESHOLD = 0.4
 
 # Text parameters.
 FONT_FACE = cv.FONT_HERSHEY_SIMPLEX
@@ -129,11 +129,11 @@ if __name__ == "__main__":
 
     if net is not None:
         Inspection = Detection(net, label_file)
-        capture = cv.VideoCapture(1)
-        capture.set(cv.CAP_PROP_FRAME_WIDTH, 700)
-        capture.set(cv.CAP_PROP_FRAME_HEIGHT, 700)
 
-        # capture = cv.VideoCapture("propeller.mp4")
+        capture = cv.VideoCapture("propeller_2.mp4")
+        #capture = cv.VideoCapture(1)
+        #capture.set(cv.CAP_PROP_FRAME_WIDTH, 700)
+        #capture.set(cv.CAP_PROP_FRAME_HEIGHT, 700)
 
         start = time.time_ns()
         frame_count = 0
@@ -143,6 +143,8 @@ if __name__ == "__main__":
         if capture.isOpened():
             while True:
                 ret, frame = capture.read()
+                # Resize the image frames
+                resize = cv.resize(frame, (700, 500))
                 if frame is None:
                     print("End of stream")
                     break
@@ -150,15 +152,16 @@ if __name__ == "__main__":
                 classes = Inspection.read_label()
 
                 if ret:
-                    img = Inspection.post_process(frame, outputs, classes)
-
                     frame_count += 1
                     total_frames += 1
-                    if frame_count >= 30:
-                        end = time.time_ns()
-                        fps = 1000000000 * frame_count / (end - start)
-                        frame_count = 0
-                        start = time.time_ns()
+
+                    img = Inspection.post_process(frame, outputs, classes)
+
+                    #if frame_count >= 5:
+                    end = time.time_ns()
+                    fps = 1000000000 * frame_count / (end - start)
+                    frame_count = 0
+                    start = time.time_ns()
 
                     if fps > 0:
                         fps_label = "FPS: %.2f" % fps
