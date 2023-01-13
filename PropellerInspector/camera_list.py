@@ -1,3 +1,7 @@
+"""
+This code is only for checking camera list
+"""
+
 import device
 import cv2
 

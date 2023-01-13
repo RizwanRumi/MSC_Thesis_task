@@ -1,3 +1,7 @@
+"""
+This code is only for camera testing purpose
+"""
+
 import numpy as np
 import cv2
 
