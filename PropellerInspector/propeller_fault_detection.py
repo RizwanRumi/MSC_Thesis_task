@@ -1,5 +1,5 @@
 from config.dnn_config import ModelConfiguration
-import sys
+import os
 import time
 import cv2 as cv
 import numpy as np
@@ -119,21 +119,29 @@ class Detection:
                 lines.append(line.rstrip())
         return lines
 
+    def write_fps(self, file):
+        file = './write_fps.txt'
+        # delete previous file
+        if os.path.exists(file):
+            os.remove(file)
+            # create new file
+            f = open(file, "x")
+            f.close()
+
 if __name__ == "__main__":
     # Load network
     model_name = './models/best.onnx'
     label_file = 'classes.txt'
+    fps_file = './write_fps.txt'
 
     model = ModelConfiguration(model_name)
     net = model.modelConfig("YOLOV5")
 
     if net is not None:
         Inspection = Detection(net, label_file)
-
+        Inspection.write_fps(fps_file)
         capture = cv.VideoCapture("propeller_2.mp4")
-        #capture = cv.VideoCapture(1)
-        #capture.set(cv.CAP_PROP_FRAME_WIDTH, 700)
-        #capture.set(cv.CAP_PROP_FRAME_HEIGHT, 700)
+        # capture = cv.VideoCapture(1)
 
         start = time.time_ns()
         frame_count = 0
@@ -141,10 +149,18 @@ if __name__ == "__main__":
         fps = -1
 
         if capture.isOpened():
+            # camera_frame_width = int(capture.get(3))
+            # camera_frame_height = int(capture.get(4))
+            frame_width = 700
+            frame_height = 700
+            print("frame width : ", frame_width)
+            print("frame height : ", frame_height)
+            size = (frame_width, frame_height)
+
+            result = cv.VideoWriter('output_cpu_core_i5.avi', cv.VideoWriter_fourcc(*'XVID'), 20.0, size)
+
             while True:
                 ret, frame = capture.read()
-                # Resize the image frames
-                resize = cv.resize(frame, (700, 500))
                 if frame is None:
                     print("End of stream")
                     break
@@ -154,7 +170,7 @@ if __name__ == "__main__":
                 if ret:
                     frame_count += 1
                     total_frames += 1
-
+                    frame = cv.resize(frame, size, fx=0, fy=0, interpolation=cv.INTER_AREA)
                     img = Inspection.post_process(frame, outputs, classes)
 
                     #if frame_count >= 5:
@@ -166,8 +182,13 @@ if __name__ == "__main__":
                     if fps > 0:
                         fps_label = "FPS: %.2f" % fps
                         cv.putText(img, fps_label, (10, 25), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                        f = open(fps_file, "a+")
+                        f.write('%f\n' % fps )
+                        f.close()
 
-                    cv.imshow('Propeller fault detection', img)
+                    cv.imshow('Propeller fault detection (CPU: Core i5)', img)
+                    result.write(img)
+
                     # key: 'ESC'
                     key = cv.waitKey(20)
                     if key == 27:
@@ -180,6 +201,7 @@ if __name__ == "__main__":
             print("Please check the video file name")
 
         capture.release()
+        result.release()
         cv.destroyAllWindows()
     else:
         print("Please check network Configuration")
