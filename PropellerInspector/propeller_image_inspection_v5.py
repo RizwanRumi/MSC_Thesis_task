@@ -114,7 +114,7 @@ if __name__ == '__main__':
         classes = f.read().rstrip('\n').split('\n')
 
     # Create folder for saving images
-    destination_img_dir = "./save_with_inference/"
+    destination_img_dir = "./yolov5_images_with_inference/"
     os.makedirs(destination_img_dir, exist_ok=True)
 
     # Load image.
@@ -124,7 +124,7 @@ if __name__ == '__main__':
         frame = cv2.imread(folder_path + filename)
 
         # Give the weight files to the model and load the network using them.
-        modelWeights = "./models/best.onnx"
+        modelWeights = "./models/iteration_10_v5_best.onnx"
         net = cv2.dnn.readNet(modelWeights)
 
         # Process image.
@@ -138,13 +138,13 @@ if __name__ == '__main__':
         # print(label)
 
         # save inference value
-        f = open('inferences.txt', "a+")
+        f = open(destination_img_dir + 'v5_inferences.txt', "a+")
         f.write('%.2f\n' % inference)
         f.close()
 
         # save detected image
         cv2.putText(img, label, (10, 15), FONT_FACE, FONT_SCALE, WHITE, THICKNESS, cv2.LINE_AA)
-        cv2.imwrite(destination_img_dir + "/detected_{}".format(filename), img)
+        cv2.imwrite(destination_img_dir + "/v5_detected_{}".format(filename), img)
 
     print("-----------Propeller Inspector---------------")
     print("All image files has been detected. please check the save_with_inference folder")
