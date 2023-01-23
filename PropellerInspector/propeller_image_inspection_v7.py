@@ -124,7 +124,7 @@ if __name__ == '__main__':
         frame = cv2.imread(folder_path + filename)
 
         # Give the weight files to the model and load the network using them.
-        modelWeights = "./models/iteration_9_v7_best_2.onnx"
+        modelWeights = "./models/iteration_9_v7_best.onnx"
         net = cv2.dnn.readNet(modelWeights)
 
         # Process image.
