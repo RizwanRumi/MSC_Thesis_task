@@ -8,6 +8,8 @@ class ModelConfiguration:
     def modelConfig(self, dnn_name):
         if dnn_name == "YOLOV5":
             network = cv.dnn.readNetFromONNX(self.model)
+        elif dnn_name == "YOLOV7":
+            network = cv.dnn.readNetFromONNX(self.model)
         else:
             network = None
 

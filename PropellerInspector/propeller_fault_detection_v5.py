@@ -23,6 +23,10 @@ YELLOW = (0, 255, 255)
 RED = (0, 0, 255)
 WHITE = (255, 0, 127)
 
+# Create folder for saving video
+destination_video_dir = "./yolov5_videos_with_inference/"
+os.makedirs(destination_video_dir, exist_ok=True)
+
 class Detection:
     """Object initialization"""
     def __init__(self, network, label):
@@ -120,7 +124,7 @@ class Detection:
         return lines
 
     def write_fps(self, file):
-        file = './write_fps.txt'
+        file = destination_video_dir + 'v5_write_fps.txt'
         # delete previous file
         if os.path.exists(file):
             os.remove(file)
@@ -130,9 +134,9 @@ class Detection:
 
 if __name__ == "__main__":
     # Load network
-    model_name = './models/best.onnx'
+    model_name = './models/iteration_10_v5_best.onnx'
     label_file = 'classes.txt'
-    fps_file = './write_fps.txt'
+    fps_file = destination_video_dir + 'v5_write_fps.txt'
 
     model = ModelConfiguration(model_name)
     net = model.modelConfig("YOLOV5")
@@ -140,7 +144,7 @@ if __name__ == "__main__":
     if net is not None:
         Inspection = Detection(net, label_file)
         Inspection.write_fps(fps_file)
-        capture = cv.VideoCapture("propeller_2.mp4")
+        capture = cv.VideoCapture("propeller_3.mp4")
         # capture = cv.VideoCapture(1)
 
         start = time.time_ns()
@@ -157,7 +161,7 @@ if __name__ == "__main__":
             print("frame height : ", frame_height)
             size = (frame_width, frame_height)
 
-            result = cv.VideoWriter('output_cpu_core_i5.avi', cv.VideoWriter_fourcc(*'XVID'), 20.0, size)
+            result = cv.VideoWriter(destination_video_dir + 'yolov5_output_cpu_core_i5.avi', cv.VideoWriter_fourcc(*'XVID'), 20.0, size)
 
             while True:
                 ret, frame = capture.read()
